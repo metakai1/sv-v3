@@ -1,1 +1,215 @@
+# Software Requirements Specification
 
+## Scripture Voice: Real-Time Bible Study Audio Conference App
+
+### 1. System Overview
+
+#### 1.1 Purpose
+
+Scripture Voice is a mobile application that facilitates real-time Bible study groups through synchronized audio conferencing and scripture display. The app enables users to create or join reading rooms where participants can engage in group Bible reading and discussion while viewing the same scripture passage simultaneously.
+
+#### 1.2 System Architecture
+
+- Android native application
+- 100ms for audio conferencing
+- Firebase Authentication (recommended for user management)
+- RevenueCat integration (future billing)
+- Scripture database (source TBD)
+- Real-time synchronization service for text position
+
+### 2. User Management System
+
+#### 2.1 Authentication
+
+- Email-based authentication
+- Password requirements:
+  - TBD: minimum length, complexity requirements
+- Session management
+- Secure storage of credentials
+
+#### 2.2 User Profile (MVP)
+
+- Fixed username (set during registration)
+- Email address
+- Unique user identifier
+- Authorization level (regular user)
+
+#### 2.3 Future User Profile Features
+
+- Username modification
+- Profile management screen
+- Usage tracking
+- Subscription status (RevenueCat)
+
+### 3. Screen Specifications
+
+#### 3.1 Login/Registration Screens
+
+##### Registration Screen
+
+- Email input field (with validation)
+- Username input field
+- Password input field (with validation)
+- Confirm password field
+- Registration button
+- Link to login screen
+
+##### Login Screen
+
+- Email input field
+- Password input field
+- Login button
+- Link to registration screen
+- Password reset functionality (optional for MVP)
+
+#### 3.2 Lobby Screen
+
+##### Scripture Selection
+
+- Scrollable list of available scriptures
+- Search/filter functionality (optional for MVP)
+- Each scripture entry shows:
+  - Title
+  - Brief description/preview
+
+##### Active Rooms Display
+
+- List of currently active rooms showing:
+  - Scripture being studied
+  - Number of participants
+  - Moderator username
+  - Join button
+
+##### Controls
+
+- Create Room button
+- Logout button
+- Navigation to profile (future)
+
+#### 3.3 Room Screen
+
+##### Participant View
+
+- Scripture display area
+  - Scrollable text box (read-only)
+  - Text position synchronized with moderator
+  - Visual indicator of current reading position
+- Participant list
+  - Username/icon for each participant
+  - Voice activity indicators
+  - Current speaker highlight
+- Audio controls
+  - Mute/unmute button
+  - Audio status indicator
+- Leave room button
+
+##### Moderator View (Additional Features)
+
+- Text scroll controls
+  - Manual scroll capability
+  - Position synchronization trigger
+- Participant management
+  - Kick participant functionality
+  - Participant status monitoring
+- Room management
+  - End room button
+  - Room status indicators
+
+### 4. Technical Requirements
+
+#### 4.1 Audio Conference System (100ms)
+
+- Maximum 5 participants per room
+- All participants have speaking privileges
+- Voice activity detection
+- Individual mute/unmute control
+- Low latency requirements
+- Background audio support
+
+#### 4.2 Scripture Management
+
+- Database of scripture texts
+- Text synchronization system
+- Scroll position tracking
+- Real-time position updates
+
+#### 4.3 Room Management
+
+- Room creation/destruction
+- Participant tracking
+- Moderator privileges
+- Auto-close on inactivity (optional)
+- Room state management
+
+#### 4.4 Future Integration Points
+
+- RevenueCat subscription management
+- Usage tracking system
+- Extended profile management
+- Additional scripture content
+
+### 5. Security Requirements
+
+#### 5.1 Authentication Security
+
+- Secure password storage
+- Session token management
+- Authentication state persistence
+- Logout handling
+
+#### 5.2 Room Security
+
+- Participant verification
+- Moderator authority verification
+- Room access control
+- Kick functionality verification
+
+#### 5.3 Data Security
+
+- Secure audio transmission
+- User data protection
+- Scripture content protection
+
+### 6. Performance Requirements
+
+#### 6.1 Audio Performance
+
+- Maximum latency threshold (TBD)
+- Voice quality standards
+- Bandwidth optimization
+
+#### 6.2 Text Synchronization
+
+- Maximum sync delay (TBD)
+- Scroll position update frequency
+- Bandwidth usage optimization
+
+#### 6.3 General Performance
+
+- App launch time
+- Screen transition time
+- Room join/leave response time
+- Maximum concurrent rooms
+- Maximum users per instance
+
+### 7. MVP Limitations and Future Enhancements
+
+#### 7.1 MVP Limitations
+
+- Fixed usernames
+- Basic room management
+- Limited scripture selection
+- No usage tracking
+- No subscription features
+
+#### 7.2 Future Enhancements
+
+- Profile management system
+- Usage tracking and analytics
+- Subscription management
+- Extended scripture library
+- Advanced room features
+- User reputation system
+- Favorite scriptures
+- Room history
+- Regular participant groups
