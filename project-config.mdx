@@ -1,1 +1,200 @@
+# Scripture Voice Project Configuration Reference
 
+## This document is an archive of the configuration used to bootstrap the scripture voice application
+
+## \
+Project Structure
+
+### Core Files
+
+```
+app/
+├── build.gradle.kts                 # App-level build configuration
+├── src/main/
+│   ├── AndroidManifest.xml         # App manifest with permissions
+│   ├── java/com/example/myapplication/
+│   │   └── MainActivity.kt         # Main activity implementation
+│   └── res/
+│       └── layout/
+│           └── activity_main.xml   # Main UI layout
+```
+
+### Required Dependencies
+
+#### Gradle Configuration
+
+Project-level settings.gradle.kts:
+
+```kotlin
+pluginManagement {
+    repositories {
+        google {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://maven.100ms.live") }
+    }
+}
+```
+
+#### Version Catalog (libs.versions.toml)
+
+```toml
+[versions]
+agp = "8.2.2"
+kotlin = "1.9.24"
+coreKtx = "1.10.1"
+junit = "4.13.2"
+junitVersion = "1.1.5"
+espressoCore = "3.5.1"
+appcompat = "1.6.1"
+material = "1.10.0"
+hmssdk = "2.9.3"
+coroutines = "1.7.3"
+constraintlayout = "2.2.0"
+
+[libraries]
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+hms-android-sdk = { group = "live.100ms", name = "android-sdk", version.ref = "hmssdk" }
+kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+```
+
+#### App-level build.gradle.kts
+
+```kotlin
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+}
+
+android {
+    namespace = "com.example.myapplication"
+    compileSdk = 35
+
+    defaultConfig {
+        applicationId = "com.example.myapplication"
+        minSdk = 24
+        targetSdk = 35
+        versionCode = 1
+        versionName = "1.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+}
+
+dependencies {
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation("live.100ms:android-sdk:2.9.3")
+    implementation(libs.kotlinx.coroutines)
+    implementation(libs.androidx.constraintlayout)
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+}
+```
+
+### Required Permissions
+
+AndroidManifest.xml needs these permissions:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
+<uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+<uses-permission android:name="android.permission.BLUETOOTH" />
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+```
+
+### Core Imports
+
+Required imports for MainActivity.kt:
+
+```kotlin
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Bundle
+import android.widget.Button
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import live.hms.video.sdk.HMSSDK
+import live.hms.video.sdk.models.HMSConfig
+```
+
+## 100ms SDK Integration
+
+### Key Components
+
+1. HMSSDK: Main SDK instance for managing room connections
+2. HMSConfig: Configuration for room connection
+3. HMSUpdateListener: Interface for room events
+
+### Room Management
+
+- Room creation/joining requires authentication token from 100ms dashboard
+- Audio permissions must be requested at runtime
+- Room roles (speaker/listener) can be configured via 100ms dashboard
+
+### Important Links
+
+- [100ms Documentation](https://www.100ms.live/docs/android/v2/quickstart/setup)
+- [100ms Dashboard](https://dashboard.100ms.live/)
+- [API Reference](https://www.100ms.live/docs/android/v2/api-reference)
+
+## Next Steps
+
+1. Set up 100ms account and obtain credentials
+2. Implement room joining functionality
+3. Add audio controls
+4. Implement participant management
+5. Add role-based permissions
+6. Test on physical device
+
+## Development Environment
+
+- Android Studio Hedgehog or later
+- Minimum SDK: 24 (Android 7.0)
+- Target SDK: 35
+- Kotlin version: 1.9.24
+- Gradle version: 8.2.2
