@@ -1,1 +1,362 @@
+I'll create a detailed implementation plan for Phase 1: Authentication System, breaking it down into small, verifiable steps that you can complete in short sessions. This approach will help you make steady progress and verify each step before moving to the next.
 
+# Phase 1: Authentication System - Implementation Plan
+
+## Overview
+
+This plan breaks down the authentication system implementation into manageable steps, each taking approximately 2-4 hours to complete. Each step includes specific goals, implementation details, and verification methods.
+
+## Step 1: Setup Authentication Repository and Models
+
+**Goal**: Create the basic structure for authentication with Firebase.
+
+**Tasks**:
+
+1. Create User data model class
+2. Create AuthRepository interface
+3. Implement FirebaseAuthRepository class
+4. Add dependency injection for AuthRepository
+
+**Verification**: The repository compiles and can be injected into other components.
+
+## Step 2: Login Screen UI
+
+**Goal**: Create the login screen layout.
+
+**Tasks**:
+
+1. Create fragment_login.xml layout with:
+   - Email input field with validation
+   - Password input field
+   - Login button
+   - "Register" navigation link
+   - "Forgot Password" link
+2. Create LoginFragment class
+3. Add LoginFragment to navigation graph
+
+**Verification**: The login screen displays correctly when navigated to.
+
+## Step 3: Login ViewModel and Logic
+
+**Goal**: Implement the login functionality.
+
+**Tasks**:
+
+1. Create LoginViewModel class
+2. Implement login function using AuthRepository
+3. Add validation logic for email and password
+4. Setup error handling
+5. Connect ViewModel to LoginFragment
+
+**Verification**: Test login with valid credentials and verify Firebase authentication works.
+
+## Step 4: Registration Screen UI
+
+**Goal**: Create the registration screen layout.
+
+**Tasks**:
+
+1. Create fragment_registration.xml with:
+   - Email input field with validation
+   - Username input field
+   - Password input field with validation
+   - Confirm password field
+   - Registration button
+   - "Back to Login" link
+2. Create RegistrationFragment class
+3. Add RegistrationFragment to navigation graph
+
+**Verification**: The registration screen displays correctly when navigated to from login.
+
+## Step 5: Registration ViewModel and Logic
+
+**Goal**: Implement the registration functionality.
+
+**Tasks**:
+
+1. Create RegistrationViewModel class
+2. Implement registration function using AuthRepository
+3. Add validation logic for all fields
+4. Add password matching validation
+5. Setup error handling
+6. Connect ViewModel to RegistrationFragment
+
+**Verification**: Test registration with valid information and verify account creation in Firebase.
+
+## Step 6: Email Verification
+
+**Goal**: Implement email verification flow.
+
+**Tasks**:
+
+1. Create EmailVerificationFragment and layout
+2. Update AuthRepository to handle email verification
+3. Add logic to send verification emails
+4. Add verification status checking
+5. Add EmailVerificationFragment to navigation graph
+
+**Verification**: Test verification email sending and status checking.
+
+## Step 7: Password Reset
+
+**Goal**: Implement password reset functionality.
+
+**Tasks**:
+
+1. Create ForgotPasswordFragment and layout
+2. Update AuthRepository to handle password reset
+3. Implement password reset request logic
+4. Add ForgotPasswordFragment to navigation graph
+
+**Verification**: Test password reset email sending.
+
+## Step 8: Session Management
+
+**Goal**: Implement persistent login state.
+
+**Tasks**:
+
+1. Create UserSessionManager class
+2. Add functions to store and retrieve auth state
+3. Implement auto-login for authenticated users
+4. Add logout functionality
+
+**Verification**: Test app reopening preserves login state.
+
+## Step 9: Navigation and Authentication State
+
+**Goal**: Control navigation based on authentication state.
+
+**Tasks**:
+
+1. Create AuthStateListener in MainActivity
+2. Implement navigation based on auth state
+3. Add protection for screens requiring authentication
+4. Setup login -&gt; lobby flow
+
+**Verification**: Test app navigation with both authenticated and unauthenticated states.
+
+## Step 10: Error Handling and Edge Cases
+
+**Goal**: Improve robustness of authentication system.
+
+**Tasks**:
+
+1. Add comprehensive error messages
+2. Handle network errors
+3. Add loading states
+4. Test and fix edge cases
+
+**Verification**: Test various error scenarios and verify appropriate handling.
+
+---
+
+Now I'll provide the code changes for Step 1: Setup Authentication Repository and Models.
+
+First, let's create the User data model class:
+
+```kotlin
+// File: app/src/main/java/com/example/scripturevoice/data/model/User.kt
+
+package com.example.scripturevoice.data.model
+
+data class User(
+    val uid: String = "",
+    val email: String = "",
+    val username: String = "",
+    val isEmailVerified: Boolean = false,
+    // Add other user properties as needed
+)
+```
+
+Next, let's create the AuthRepository interface:
+
+```kotlin
+// File: app/src/main/java/com/example/scripturevoice/data/repository/AuthRepository.kt
+
+package com.example.scripturevoice.data.repository
+
+import com.example.scripturevoice.data.Resource
+import com.example.scripturevoice.data.model.User
+
+interface AuthRepository : BaseRepository {
+    suspend fun login(email: String, password: String): Resource<User>
+    suspend fun register(email: String, password: String, username: String): Resource<User>
+    suspend fun sendEmailVerification(): Resource<Boolean>
+    suspend fun sendPasswordResetEmail(email: String): Resource<Boolean>
+    suspend fun logout(): Resource<Boolean>
+    fun getCurrentUser(): User?
+    fun isUserAuthenticated(): Boolean
+    fun isEmailVerified(): Boolean
+}
+```
+
+Now, let's implement the FirebaseAuthRepository:
+
+```kotlin
+// File: app/src/main/java/com/example/scripturevoice/data/repository/FirebaseAuthRepository.kt
+
+package com.example.scripturevoice.data.repository
+
+import com.example.scripturevoice.data.Resource
+import com.example.scripturevoice.data.model.User
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
+
+class FirebaseAuthRepository @Inject constructor(
+    private val auth: FirebaseAuth,
+    private val firestore: FirebaseFirestore
+) : AuthRepository {
+
+    override suspend fun login(email: String, password: String): Resource<User> = safeApiCall {
+        val result = auth.signInWithEmailAndPassword(email, password).await()
+        result.user?.let { firebaseUser ->
+            User(
+                uid = firebaseUser.uid,
+                email = firebaseUser.email ?: "",
+                isEmailVerified = firebaseUser.isEmailVerified,
+                username = getUsernameFromFirestore(firebaseUser.uid) ?: ""
+            )
+        } ?: throw Exception("Authentication failed")
+    }
+
+    override suspend fun register(
+        email: String, 
+        password: String, 
+        username: String
+    ): Resource<User> = safeApiCall {
+        val result = auth.createUserWithEmailAndPassword(email, password).await()
+        result.user?.let { firebaseUser ->
+            // Save additional user data to Firestore
+            val user = User(
+                uid = firebaseUser.uid,
+                email = firebaseUser.email ?: "",
+                username = username,
+                isEmailVerified = firebaseUser.isEmailVerified
+            )
+            
+            // Save user to Firestore
+            saveUserToFirestore(user)
+            
+            // Send verification email
+            firebaseUser.sendEmailVerification().await()
+            
+            user
+        } ?: throw Exception("Registration failed")
+    }
+
+    override suspend fun sendEmailVerification(): Resource<Boolean> = safeApiCall {
+        auth.currentUser?.sendEmailVerification()?.await()
+        true
+    }
+
+    override suspend fun sendPasswordResetEmail(email: String): Resource<Boolean> = safeApiCall {
+        auth.sendPasswordResetEmail(email).await()
+        true
+    }
+
+    override suspend fun logout(): Resource<Boolean> = safeApiCall {
+        auth.signOut()
+        true
+    }
+
+    override fun getCurrentUser(): User? {
+        return auth.currentUser?.let { firebaseUser ->
+            User(
+                uid = firebaseUser.uid,
+                email = firebaseUser.email ?: "",
+                isEmailVerified = firebaseUser.isEmailVerified
+                // Username will be loaded from Firestore when needed
+            )
+        }
+    }
+
+    override fun isUserAuthenticated(): Boolean {
+        return auth.currentUser != null
+    }
+
+    override fun isEmailVerified(): Boolean {
+        return auth.currentUser?.isEmailVerified ?: false
+    }
+    
+    private suspend fun getUsernameFromFirestore(uid: String): String? {
+        return try {
+            val document = firestore.collection("users").document(uid).get().await()
+            document.getString("username")
+        } catch (e: Exception) {
+            null
+        }
+    }
+    
+    private suspend fun saveUserToFirestore(user: User) {
+        val userData = hashMapOf(
+            "uid" to user.uid,
+            "email" to user.email,
+            "username" to user.username,
+            "isEmailVerified" to user.isEmailVerified,
+            "createdAt" to com.google.firebase.Timestamp.now()
+        )
+        
+        firestore.collection("users").document(user.uid).set(userData).await()
+    }
+}
+```
+
+Finally, let's update the AppModule to provide the AuthRepository:
+
+```kotlin
+// File: app/src/main/java/com/example/scripturevoice/di/AppModule.kt
+
+package com.example.scripturevoice.di
+
+import live.hms.video.sdk.HMSSDK
+import android.content.Context
+import com.example.scripturevoice.data.repository.AuthRepository
+import com.example.scripturevoice.data.repository.FirebaseAuthRepository
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+object AppModule {
+
+    @Provides
+    @Singleton
+    fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
+
+    @Provides
+    @Singleton
+    fun provideFirebaseFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
+
+    @Provides
+    @Singleton
+    fun provideHmsSDK(@ApplicationContext context: Context): HMSSDK {
+        return HMSSDK.Builder(context).build()
+    }
+    
+    @Provides
+    @Singleton
+    fun provideAuthRepository(
+        auth: FirebaseAuth,
+        firestore: FirebaseFirestore
+    ): AuthRepository {
+        return FirebaseAuthRepository(auth, firestore)
+    }
+}
+```
+
+To verify this implementation:
+
+1. Build the project and ensure there are no compilation errors
+2. Check that the dependency injection for AuthRepository works properly
+3. This is just the foundation - actual functionality will be tested in subsequent steps
+
+These changes create the basic structure for the authentication system. The repository pattern provides a clean interface for authentication operations, and the implementation uses Firebase Authentication and Firestore for user management.
