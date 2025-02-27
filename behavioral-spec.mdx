@@ -1,1 +1,185 @@
+# Scripture Voice: Behavioral Specification
 
+## 1. Core Concepts
+
+### 1.1 Reading Rooms
+
+- Audio-enabled conference spaces
+- Synchronized scripture display
+- Maximum 5 participants
+- Single moderator (room creator)
+- All participants have speaking privileges
+- Live until explicitly closed or timed out
+
+### 1.2 User Roles
+
+#### Moderator (Room Creator)
+
+- Creates room by selecting scripture
+- Controls text scroll position
+- Can remove participants
+- Can end room
+- Has speaking privileges
+
+#### Participant
+
+- Joins existing rooms
+- Views synchronized scripture text
+- Has speaking privileges
+- Can leave room at any time
+
+## 2. User Flows
+
+### 2.1 Room Creation Flow
+
+1. User selects scripture from available options
+2. Initiates room creation
+3. Automatically becomes moderator
+4. Room appears in lobby for others to join
+5. Room remains active until:
+   - Moderator ends it
+   - Inactivity timeout (optional feature)
+   - System shutdown
+
+### 2.2 Room Participation Flow
+
+1. User views available rooms in lobby
+2. Selects and joins room
+3. Enters as regular participant
+4. Can speak/mute at will
+5. Sees text position controlled by moderator
+6. Can leave room at any time
+7. Is removed if kicked by moderator
+
+### 2.3 Bible Study Flow
+
+1. Participants join room
+2. All can see same scripture text
+3. Text position controlled by moderator
+4. Participants take turns reading (social coordination)
+5. All participants can speak/discuss
+6. Moderator scrolls text as reading progresses
+
+## 3. Key Interactions
+
+### 3.1 Audio Management
+
+- All users can mute/unmute themselves
+- Voice activity detection shown for all users
+- No system-enforced speaking order
+- Speaking order managed by social convention
+- Full-time speaking privileges for all users
+
+### 3.2 Text Synchronization
+
+- Moderator controls scroll position
+- All participants' displays sync to moderator's position
+- Real-time synchronization of text position
+- Read-only for participants
+- Scroll control exclusive to moderator
+
+### 3.3 Room Management
+
+#### Moderator Controls
+
+- Kick inactive/disruptive participants
+- End room at any time
+- Control text scroll position
+- View participant status
+
+#### Participant Controls
+
+- Join room (if under 5 participants)
+- Leave room at will
+- Mute/unmute audio
+- View other participants' status
+
+## 4. Screen Behaviors
+
+### 4.1 Lobby Screen
+
+- Displays available scripture selections
+- Shows list of active rooms with:
+  - Scripture being studied
+  - Number of participants
+  - Moderator identification
+- Create room option
+- Join room option
+- Logout capability
+
+### 4.2 Room Screen
+
+#### Common Elements (Both Roles)
+
+- Scripture text display
+- Participant list with voice activity
+- Audio mute toggle
+- Room exit option
+
+#### Moderator-Specific Elements
+
+- Text scroll controls
+- Participant removal interface
+- Room termination control
+
+#### Participant-Specific Elements
+
+- Read-only text display
+- Synchronized scroll position
+- Basic room status information
+
+## 5. System States
+
+### 5.1 Room States
+
+- Active: Open for participation
+- Full: 5 participants (max capacity)
+- Empty: No participants (auto-close condition)
+- Closed: Terminated by moderator
+
+### 5.2 User States
+
+- Active: Participating in room
+- Speaking: Actively using audio
+- Muted: Audio disabled
+- Inactive: No recent activity
+- Disconnected: Lost connection
+
+### 5.3 Text States
+
+- Synchronized: Matching moderator position
+- Syncing: Updating to new position
+- Out of Sync: Temporary desynchronization
+
+## 6. Error States and Recovery
+
+### 6.1 Connection Issues
+
+- Temporary audio dropout
+- Text synchronization delay
+- Room connection loss
+- Participant disconnection
+
+### 6.2 Room Issues
+
+- Moderator disconnection
+- Maximum participant limit reached
+- Room closure during session
+- Kicked from room
+
+## 7. Usage Constraints
+
+### 7.1 Current Limitations (MVP)
+
+- Fixed username
+- No usage tracking
+- Basic room management
+- Simple scripture selection
+- No profile customization
+
+### 7.2 Social Conventions
+
+- Speaking order determined by participants
+- Reading turns managed by group
+- Discussion moderation through social norms
+- Group size limit of 5 for manageability
